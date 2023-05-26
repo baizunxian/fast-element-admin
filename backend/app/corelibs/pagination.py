@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.corelibs import g
 from app.corelibs.consts import DEFAULT_PAGE, DEFAULT_PER_PAGE
 from app.db.session import provide_session
-from app.utils.serialize import count_query, paginate_query, unwrap_scalars
+from app.corelibs.serialize import count_query, paginate_query, unwrap_scalars
 
 
 @provide_session

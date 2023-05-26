@@ -9,7 +9,7 @@ from app.corelibs.pagination import parse_pagination
 from app.db.session import provide_session
 from app.exceptions.exceptions import AccessTokenFail
 from app.utils.current_user import current_user
-from app.utils.serialize import unwrap_scalars
+from app.corelibs.serialize import unwrap_scalars
 
 
 @as_declarative()

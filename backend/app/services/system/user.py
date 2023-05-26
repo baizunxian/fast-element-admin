@@ -13,7 +13,7 @@ from app.schemas.system.user import UserLogin, UserIn, UserResetPwd, UserDel, Us
 from app.services.system.menu import MenuService
 from app.utils.current_user import current_user
 from app.utils.des import encrypt_rsa_password, decrypt_rsa_password
-from app.utils.serialize import default_serialize
+from app.corelibs.serialize import default_serialize
 
 
 class UserService:

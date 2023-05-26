@@ -8,7 +8,7 @@ from starlette.responses import Response, JSONResponse
 from app.corelibs import g
 from app.corelibs.codes import CodeEnum
 from loguru import logger
-from app.utils.serialize import default_serialize
+from app.corelibs.serialize import default_serialize
 import orjson
 
 

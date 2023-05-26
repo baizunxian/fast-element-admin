@@ -6,7 +6,7 @@ import typing
 from pydantic import BaseSettings, AnyHttpUrl, Field
 
 project_desc = """
-    🎉 zerorunner 管理员接口汇总 🎉
+    🎉 fast-element-admin 管理员接口汇总 🎉
     ✨ 账号: admin ✨
     ✨ 密码: 123456 ✨
     ✨ 权限(scopes): admin ✨
