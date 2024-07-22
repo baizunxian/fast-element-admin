@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # @author: xiaobai
+from app.db.redis import RedisPool
+from config import config
 
-from .redis import init_redis_pool, MyRedis
-from .session import async_session
+redis_pool = RedisPool()

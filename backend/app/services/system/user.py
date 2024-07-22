@@ -1,19 +1,24 @@
-import typing
-from datetime import datetime
+import asyncio
+import time
 import traceback
+import typing
 import uuid
+from datetime import datetime
+
+from loguru import logger
 
 from app.corelibs import g
-from loguru import logger
 from app.corelibs.codes import CodeEnum
 from app.corelibs.consts import TEST_USER_INFO, CACHE_DAY
+from app.db import redis_pool
 from app.models.system_models import User, Menu, Roles, UserLoginRecord
 from app.schemas.system.user import UserLogin, UserIn, UserResetPwd, UserDel, UserQuery, \
     UserLoginRecordIn, UserLoginRecordQuery
 from app.services.system.menu import MenuService
+from app.utils.context import FastApiRequest
 from app.utils.current_user import current_user
 from app.utils.des import encrypt_rsa_password, decrypt_rsa_password
-from app.corelibs.serialize import default_serialize
+from app.utils.serialize import default_serialize
 
 
 class UserService:
@@ -45,28 +50,14 @@ class UserService:
             "token": token,
             "login_time": login_time,
             "username": user_info["username"],
+            "nickname": user_info["nickname"],
             "roles": roles if roles else [],
             "tags": tags if tags else []
         }
-        await g.redis.set(TEST_USER_INFO.format(token), token_user_info, CACHE_DAY)
+        await redis_pool.redis.set(TEST_USER_INFO.format(token), token_user_info, CACHE_DAY)
         logger.info('用户 [{}] 登录了系统'.format(user_info["username"]))
 
-        try:
-            login_ip = g.request.headers.get("X-Real-IP", None)
-            if not login_ip:
-                login_ip = g.request.client.host
-            params = UserLoginRecordIn(
-                token=token,
-                code=user_info["username"],
-                user_id=user_info["id"],
-                user_name=user_info["nickname"],
-                login_type="password",
-                login_time=login_time,
-                login_ip=login_ip,
-            )
-            await UserService.user_login_record(params)
-        except Exception as err:
-            logger.error(f"登录日志记录错误\n{err}")
+        asyncio.create_task(UserService.login_record("login", token_user_info, token))
         return token_user_info
 
     @staticmethod
@@ -75,11 +66,38 @@ class UserService:
         登出
         :return:
         """
-        token = g.request.headers.get('token', None)
+        token = FastApiRequest.get().headers.get('token', None)
         try:
-            await g.redis.delete(TEST_USER_INFO.format(token))
+            token_user_info = await current_user(token)
+            await redis_pool.redis.delete(TEST_USER_INFO.format(token))
+            asyncio.create_task(UserService.login_record("logout", token_user_info, token))
         except Exception as err:
             logger.error(traceback.format_exc())
+
+    @staticmethod
+    async def login_record(record_type: str, user_token_info: dict, token: str):
+        try:
+            if record_type == 'login':
+                login_ip = FastApiRequest.get().headers.get("X-Real-IP", None)
+                if not login_ip:
+                    login_ip = FastApiRequest.get().client.host
+                params = UserLoginRecordIn(
+                    token=token,
+                    code=user_token_info["username"],
+                    user_id=user_token_info["id"],
+                    user_name=user_token_info["nickname"],
+                    login_type="password",
+                    login_time=user_token_info['login_time'],
+                    login_ip=login_ip,
+                )
+                await UserLoginRecord.create_or_update(params.model_dump())
+            elif record_type == 'logout':
+                login_recode = await UserLoginRecord.get_by_token(token)
+                if login_recode:
+                    await UserLoginRecord.update({"id": login_recode['id'], "logout_time": datetime.now()})
+
+        except Exception as exc:
+            logger.error(f"登录日志记录错误\n{traceback.format_exc(3)}")
 
     @staticmethod
     async def user_register(user_params: UserIn) -> "User":
@@ -130,7 +148,7 @@ class UserService:
                 "roles": result["roles"],
                 "tags": result["tags"]
             }
-            await g.redis.set(TEST_USER_INFO.format(g.token), token_user_info, CACHE_DAY)
+            await redis_pool.redis.set(TEST_USER_INFO.format(g.token), token_user_info, CACHE_DAY)
         return result
 
     @staticmethod
@@ -152,7 +170,7 @@ class UserService:
         :param token: token
         :return:
         """
-        user_info = await g.redis.get(TEST_USER_INFO.format(token))
+        user_info = await redis_pool.redis.get(TEST_USER_INFO.format(token))
         if not user_info:
             raise ValueError(CodeEnum.PARTNER_CODE_TOKEN_EXPIRED_FAIL.msg)
 
@@ -178,9 +196,9 @@ class UserService:
         await User.update(**{"password": new_pwd, "id": params.id})
 
     @staticmethod
-    async def get_user_info_by_token(token: str) -> typing.Union[typing.Dict[typing.Text, typing.Any], None]:
+    async def get_user_info_by_token() -> typing.Union[typing.Dict[typing.Text, typing.Any], None]:
         """根据token获取用户信息"""
-        token_user_info = await g.redis.get(TEST_USER_INFO.format(token))
+        token_user_info = await current_user()
         if not token_user_info:
             raise ValueError(CodeEnum.PARTNER_CODE_TOKEN_EXPIRED_FAIL.msg)
         user_info = await User.get(token_user_info.get("id"))
@@ -197,9 +215,9 @@ class UserService:
         }
 
     @staticmethod
-    async def get_menu_by_token(token: str) -> typing.List[typing.Dict[typing.Text, typing.Any]]:
+    async def get_menu_by_token() -> typing.List[typing.Dict[typing.Text, typing.Any]]:
         """菜单权限"""
-        current_user_info = await current_user(token)
+        current_user_info = await current_user()
         if not current_user_info:
             return []
         user_info = await User.get(current_user_info.get("id"))
@@ -222,10 +240,10 @@ class UserService:
         parent_menu = [menu for menu in all_menu if menu['parent_id'] == 0]
         return MenuService.menu_assembly(parent_menu, all_menu) if menu_ids else []
 
-    @staticmethod
-    async def user_login_record(params: UserLoginRecordIn):
-        result = await UserLoginRecord.create_or_update(params.dict())
-        return result
+    # @staticmethod
+    # async def user_login_record(params: UserLoginRecordIn):
+    #     result = await UserLoginRecord.create_or_update(params.dict())
+    #     return result
 
 
 class LoginRecordService:

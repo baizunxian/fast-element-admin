@@ -3,7 +3,7 @@
 import asyncio
 
 from loguru import logger
-from app.db.session import engine
+from app.db.sqlalchemy import engine
 from app.models.base import Base
 
 

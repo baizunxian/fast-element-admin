@@ -1,3 +1,5 @@
+import typing
+
 from pydantic import BaseModel, Field
 
 from app.schemas.base import BaseSchema
@@ -6,13 +8,13 @@ from app.schemas.base import BaseSchema
 class LookupIn(BaseModel):
     """字典保存"""
 
-    id: int = Field(None, description="字典id")
+    id: typing.Optional[int] = Field(None, description="字典id")
     code: str = Field(..., description="字典code")
-    description: str = Field(None, description="字典描述")
+    description: typing.Optional[str] = Field(None, description="字典描述")
 
 
 class LookupQuery(BaseSchema):
-    code: str = Field(None, description="字典code")
+    code: typing.Optional[str] = Field(None, description="字典code")
 
 
 class LookupId(BaseSchema):
@@ -20,8 +22,8 @@ class LookupId(BaseSchema):
 
 
 class LookupValueQuery(BaseSchema):
-    code: str = Field(None, description="字典code")
-    lookup_id: str = Field(None, description="lookup_id")
+    code: typing.Optional[str] = Field(None, description="字典code")
+    lookup_id: typing.Optional[str] = Field(None, description="lookup_id")
 
     # @root_validator(pre=True)
     # def root_validator(cls, data):
@@ -38,8 +40,8 @@ class LookupValueIn(BaseModel):
     """字典值保存"""
     id: int = Field(None, description="字典id")
     lookup_id: int = Field(None, description="字典id")
-    lookup_code: str = Field(..., description="字典code")
-    lookup_value: str = Field(..., description="字典value")
-    ext: str = Field(None, description="备注")
-    display_sequence: int = Field(None, description="显示顺序")
-    description: str = Field(None, description="描述")
+    lookup_code: typing.Optional[str] = Field(..., description="字典code")
+    lookup_value: typing.Optional[str] = Field(..., description="字典value")
+    ext: typing.Optional[str] = Field(None, description="备注")
+    display_sequence: typing.Optional[int] = Field(None, description="显示顺序")
+    description: typing.Optional[str] = Field(None, description="描述")

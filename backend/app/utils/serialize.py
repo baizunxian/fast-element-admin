@@ -53,6 +53,12 @@ def unwrap_scalars(items: typing.Union[typing.Sequence[Row], Row]) -> typing.Uni
 def default_serialize(obj):
     """默认序序列化"""
     try:
+        if isinstance(obj, int) and len(str(obj)) > 15:
+            return str(obj)
+        if isinstance(obj, dict):
+            return {key: default_serialize(value) for key, value in obj.items()}
+        if isinstance(obj, list):
+            return [default_serialize(i) for i in obj]
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(obj, Row):
@@ -60,6 +66,8 @@ def default_serialize(obj):
             return {key: default_serialize(value) for key, value in data.items()}
         if hasattr(obj, "__class__") and isinstance(obj.__class__, DeclarativeMeta):
             return {c.name: default_serialize(getattr(obj, c.name)) for c in obj.__table__.columns}
+        if isinstance(obj, typing.Callable):
+            return repr(obj)
         return jsonable_encoder(obj)
     except TypeError as err:
         return repr(obj)

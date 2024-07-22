@@ -112,7 +112,6 @@ def create_celery():
             g.trace_id = self.request.trace_id
             _task_stack.push(self)
             self.push_request(args=args, kwargs=kwargs)
-            g.redis = AsyncIOPool.run_in_pool(init_redis_pool())
             try:
                 if asyncio.iscoroutinefunction(self.run):
                     return AsyncIOPool.run_in_pool(self.run(*args, **kwargs))

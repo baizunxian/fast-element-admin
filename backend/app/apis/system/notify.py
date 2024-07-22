@@ -27,7 +27,7 @@
 #         'rows': _result
 #     }
 #     result.update(pagination)
-#     return partner_success(data=result)
+#     return HttpResponse.successdata=result)
 #
 #
 # @bp.route('/notifyInfo', methods=['POST'])
@@ -41,7 +41,7 @@
 #         notify_info.read_status = 20
 #         notify_info.save()
 #     n_info = SendMessageSchema().dump(notify_info)
-#     return partner_success(n_info)
+#     return HttpResponse.successn_info)
 #
 #
 # @bp.route('/sendMessage', methods=['POST'])
@@ -59,7 +59,7 @@
 #         return data
 #     except Exception as err:
 #         logger.error(traceback.format_exc())
-#         return partner_success(code=codes.PARTNER_CODE_FAIL, msg=str(err))
+#         return HttpResponse.successcode=codes.PARTNER_CODE_FAIL, msg=str(err))
 #
 #
 # @bp.route('/getGroupInfo', methods=['POST'])

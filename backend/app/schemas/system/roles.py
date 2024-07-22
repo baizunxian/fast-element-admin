@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # @author: xiaobai
-from pydantic import BaseModel, Field, root_validator
 import typing
+
+from pydantic import BaseModel, Field, model_validator
+
 from app.schemas.base import BaseSchema
 
 
@@ -10,10 +12,10 @@ class RoleIn(BaseModel):
     name: str = Field(..., description="角色名称")
     role_type: int = Field(default=10, description="角色类型")
     menus: str = Field(..., description="菜单列表")
-    description: str = Field(None, description="描述")
-    status: int = Field(default=10, description="状态 10 启用 20 禁用")
+    description: typing.Optional[str] = Field(None, description="描述")
+    status: typing.Optional[int] = Field(default=10, description="状态 10 启用 20 禁用")
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def root_validator(cls, data: typing.Dict[typing.Text, typing.Any]):
         menus = data.get("menus", [])
         if menus:
@@ -22,9 +24,9 @@ class RoleIn(BaseModel):
 
 
 class RoleQuery(BaseSchema):
-    id: int = Field(None, description="角色id")
-    name: str = Field(None, description="角色名称")
-    role_type: str = Field(10, description="角色类型")
+    id: typing.Optional[int] = Field(None, description="角色id")
+    name: typing.Optional[str] = Field(None, description="角色名称")
+    role_type: typing.Optional[str] = Field(10, description="角色类型")
 
 
 class RoleDel(BaseModel):

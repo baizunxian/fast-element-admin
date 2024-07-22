@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # @author: xiaobai
 import typing
-import uuid
 
-from sqlalchemy import Column, String, Text, Integer, DateTime, select, update, BigInteger, Index, JSON
+from sqlalchemy import Column, String, Text, Integer, DateTime, select, update, Index, JSON
 from sqlalchemy.orm import aliased
 
 from app.models.base import Base
@@ -333,6 +332,13 @@ class UserLoginRecord(Base):
             .order_by(cls.id.desc())
         return await cls.pagination(stmt)
 
+    @classmethod
+    async def get_by_token(cls, token: str):
+        if not token:
+            return None
+        stmt = select(cls.get_table_columns()).where(cls.enabled_flag == 1, cls.token == token).order_by(cls.id.desc())
+        return await cls.get_result(stmt, first=True)
+
 
 class FileInfo(Base):
     """文件信息"""
@@ -344,4 +350,3 @@ class FileInfo(Base):
     original_name = Column(String(255), nullable=True, comment='原名称')
     content_type = Column(String(255), nullable=True, comment='文件类型')
     file_size = Column(String(255), nullable=True, comment='文件大小')
-

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author: xiaobai
-
-
 from fastapi import APIRouter
+
 from app.apis.system import user, menu, roles, lookup, id_center, file
 
 app_router = APIRouter()

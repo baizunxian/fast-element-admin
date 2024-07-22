@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 # @author: xiaobai
-import traceback
-from asyncio import current_task
+import asyncio
 import functools
+import traceback
 import typing
-
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_scoped_session, async_sessionmaker
-from config import config
+from asyncio import current_task
+from contextlib import asynccontextmanager
 
 # 创建表引擎
 from loguru import logger
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_scoped_session, async_sessionmaker
+
+from app.utils.context import SQLAlchemySession
+from config import config
 
 engine = create_async_engine(
     url=config.DATABASE_URI,  # 数据库uri
@@ -61,8 +64,29 @@ def provide_session(func: typing.Callable):
                 except Exception:
                     await session.rollback()
                     raise
-                finally:
-                    await session.commit()
-                    await async_session.remove()
+
+    return wrapper
+
+
+@asynccontextmanager
+async def content_transaction():
+    async with async_session() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+
+
+def async_transaction(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        async with content_transaction() as session:
+            SQLAlchemySession.set(session)
+            if asyncio.iscoroutinefunction(func):
+                return await func(*args, **kwargs)
+            else:
+                return func(*args, **kwargs)
 
     return wrapper

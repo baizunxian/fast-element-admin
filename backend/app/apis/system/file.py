@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
 
-from app.corelibs.http_response import partner_success
+from app.utils.response import HttpResponse
 from app.schemas.system.file import FileId
 from app.services.system.file import FileService
 
@@ -10,7 +10,7 @@ router = APIRouter()
 @router.post('/upload', description="文件上传")
 async def upload(file: UploadFile = File(...)):
     result = await FileService.upload(file)
-    return partner_success(result)
+    return await HttpResponse.success(result)
 
 
 @router.get('/download/{file_id}', description="文件下载")
@@ -27,4 +27,4 @@ async def get_file_by_id(params: FileId):
 @router.post('/deleted', description="文件删除")
 async def deleted(params: FileId):
     data = await FileService.get_file_by_id(params)
-    return partner_success(data)
+    return await HttpResponse.success(data)
