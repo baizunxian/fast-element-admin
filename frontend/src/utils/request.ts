@@ -3,6 +3,7 @@ import {ElMessage, ElMessageBox} from 'element-plus';
 import {Session} from '/@/utils/storage';
 import qs from 'qs';
 import {getApiBaseUrl} from "/@/utils/config";
+import {handlerRedirectUrl} from "/@/utils/urlHandler";
 
 const cancelToken = axios.CancelToken
 const source = cancelToken.source()
@@ -42,18 +43,16 @@ service.interceptors.response.use(
 		if (res.code && res.code !== 0) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 11000) {
-				Session.clear(); // 清除浏览器全部临时缓存
-				source.cancel('Token Timeout');
 				ElMessageBox.confirm('登录信息已失效，是否重新登录？', '提示', {
 					confirmButtonText: '确认',
 					cancelButtonText: '取消',
 					type: 'warning',
 				})
 					.then(() => {
-						window.location.href = '/'; // 去登录页
+						Session.clear(); // 清除浏览器全部临时缓存
+						window.location.href = handlerRedirectUrl() || '/'; // 去登录页
 					})
 					.catch(() => {
-
 					});
 			} else {
 				ElMessage.error(res.msg || '接口错误！');
@@ -71,7 +70,7 @@ service.interceptors.response.use(
 			ElMessage.error('网络连接错误');
 		} else {
 
-			if (error.response.data) ElMessage.error(error.response.statusText);
+			if (error.response?.data) ElMessage.error(error.response.statusText);
 			else ElMessage.error('接口路径找不到');
 		}
 		return Promise.reject(error);

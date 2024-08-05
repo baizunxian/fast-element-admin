@@ -106,15 +106,14 @@ router.beforeEach(async (to, from, next) => {
     NProgress.done();
   } else {
     if (!token) {
-      next(`/login?redirect=${to.path}&params=${JSON.stringify(to.query ? to.query : to.params)}`);
+      next({path: '/login', query: {redirect: to.path, params: JSON.stringify(to.query ? to.query : to.params)}});
       Session.clear();
       NProgress.done();
     } else if (token && to.path === '/login') {
-      next('/home');
+      next('/');
       NProgress.done();
     } else {
       const storesRoutesList = useRoutesList(pinia);
-      console.log(storesRoutesList, 'storesRoutesList')
       const {routesList, isGet} = storeToRefs(storesRoutesList);
       if (routesList.value.length === 0 && !isGet.value) {
         if (isRequestRoutes) {
