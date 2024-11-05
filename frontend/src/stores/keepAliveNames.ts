@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import {defineStore} from 'pinia';
 
 /**
  * 路由缓存列表
@@ -14,14 +14,20 @@ export const useKeepALiveNames = defineStore('keepALiveNames', {
 		cachedViews: [],
 	}),
 	actions: {
-		async setCacheKeepAlive(data: Array<string>) {
+		setCacheKeepAlive(data: Array<string>) {
 			this.keepAliveNames = data;
 		},
-		async addCachedView(view: any) {
-			if (view.meta.isKeepAlive) this.cachedViews?.push(view.name);
+		updateCacheKeepAlive(name: string) {
+			const index = this.keepAliveNames.indexOf(name);
+			index == -1 && this.keepAliveNames.push(name);
 		},
-		async delCachedView(view: any) {
-			const index = this.cachedViews.indexOf(view.name);
+
+		async addCachedView(isKeepAlive: boolean, fullPath: string) {
+			const index = this.cachedViews.indexOf(fullPath);
+			if (isKeepAlive && index == -1) this.cachedViews?.push(fullPath);
+		},
+		async delCachedView(fullPath: string) {
+			const index = this.cachedViews.indexOf(fullPath);
 			index > -1 && this.cachedViews.splice(index, 1);
 		},
 		async delOthersCachedViews(view: any) {

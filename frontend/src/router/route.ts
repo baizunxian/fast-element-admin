@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from 'vue-router';
+import {RouteRecordRaw} from 'vue-router';
 
 /**
  * 建议：路由 path 路径与文件夹名称相同，找文件可浏览器地址找，方便定位文件位置
@@ -15,7 +15,6 @@ import { RouteRecordRaw } from 'vue-router';
  *      icon：          菜单、tagsView 图标，阿里：加 `iconfont xxx`，fontawesome：加 `fa xxx`
  * }
  */
-
 // 扩展 RouteMeta 接口
 declare module 'vue-router' {
 	interface RouteMeta {
@@ -50,7 +49,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 			{
 				path: '/home',
 				name: 'home',
-				component: () => import('/@/views/home/index.vue'),
+				component: () => import('/src/views/home/index.vue'),
 				meta: {
 					title: '首页',
 					isLink: '',
@@ -81,7 +80,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/menu',
 						name: 'systemMenu',
-						component: () => import('/@/views/system/menu/index.vue'),
+						component: () => import('/src/views/system/menu/index.vue'),
 						meta: {
 							title: '菜单管理',
 							isLink: '',
@@ -96,7 +95,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/role',
 						name: 'systemRole',
-						component: () => import('/@/views/system/role/index.vue'),
+						component: () => import('/src/views/system/role/index.vue'),
 						meta: {
 							title: '角色管理',
 							isLink: '',
@@ -111,7 +110,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/user',
 						name: 'systemUser',
-						component: () => import('/@/views/system/user/index.vue'),
+						component: () => import('/src/views/system/user/index.vue'),
 						meta: {
 							title: '用户管理',
 							isLink: '',
@@ -126,7 +125,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/dept',
 						name: 'systemDept',
-						component: () => import('/@/views/system/dept/index.vue'),
+						component: () => import('/src/views/system/dept/index.vue'),
 						meta: {
 							title: '部门管理',
 							isLink: '',
@@ -141,7 +140,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/system/dic',
 						name: 'systemDic',
-						component: () => import('/@/views/system/dic/index.vue'),
+						component: () => import('/src/views/system/dic/index.vue'),
 						meta: {
 							title: '字典管理',
 							isLink: '',
@@ -163,7 +162,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
  * 定义404、401界面
  * @link 参考：https://next.router.vuejs.org/zh/guide/essentials/history-mode.html#netlify
  */
-export const notFoundAndNoPower = [
+export const notFoundAndNoPower: Array<RouteRecordRaw> = [
 	{
 		path: '/:path(.*)*',
 		name: 'notFound',
@@ -182,6 +181,15 @@ export const notFoundAndNoPower = [
 			isHide: true,
 		},
 	},
+	{
+		path: '/error',
+		name: 'error',
+		component: () => import('/@/views/error/error.vue'),
+		meta: {
+			title: '错误页面',
+			isHide: true,
+		},
+	},
 ];
 
 /**
@@ -194,7 +202,7 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 	{
 		path: '/login',
 		name: 'login',
-		component: () => import('/@/views/login/index.vue'),
+		component: () => import('/src/views/login/index.vue'),
 		meta: {
 			title: '登录',
 		},

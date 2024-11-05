@@ -26,11 +26,11 @@
 
 @font-face {
   font-family: 'HarmonyOS_Medium';
-  src: url("/src/assets/fonts/HarmonyOS_Sans_SC_Medium.ttf");
+  src: url("/@/assets/fonts/HarmonyOS_Sans_SC_Medium.ttf");
 }
 
 @mixin default-font-family {
-  font-family: PingFang SC, HarmonyOS_Medium, Helvetica Neue, Microsoft YaHei, sans-serif;
+  font-family: PingFang SC, HarmonyOS_Medium, Helvetica Neue, Microsoft YaHei, sans-serif !important;
 }
 
 html,
@@ -53,11 +53,13 @@ body,
 .app-container {
   padding: 15px;
 }
+
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   @include default-font-family
 }
+
 /* 主布局样式
 ------------------------------- */
 .layout-container {
@@ -104,6 +106,7 @@ pre {
     // 内层 el-scrollbar样式，用于界面高度自适应（main.vue）
     .layout-main-scroll {
       @extend .layout-flex;
+      height: 100%;
 
       .layout-parent {
         @extend .layout-flex;
@@ -228,7 +231,7 @@ pre {
 
 /* element plus 全局样式
 ------------------------------- */
-.layout-breadcrumb-seting {
+.layout-breadcrumb-setting {
   .el-divider {
     background-color: rgb(230, 230, 230);
   }
@@ -279,6 +282,14 @@ pre {
       height: 100%;
     }
   }
+}
+
+.justify-space-between {
+  justify-content: space-between;
+}
+
+.align-items-center {
+  align-items: center;
 }
 
 /* cursor 鼠标形状
@@ -349,7 +360,7 @@ pre {
 
 /* 字体大小全局样式
 ------------------------------- */
-@for $i from 10 through 32 {
+@for $i from 10 through 100 {
   .font#{$i} {
     font-size: #{$i}px !important;
   }
@@ -357,7 +368,10 @@ pre {
 
 /* 外边距、内边距全局样式
 ------------------------------- */
-@for $i from 1 through 35 {
+@for $i from 1 through 100 {
+  .m#{$i} {
+    margin: #{$i}px !important;
+  }
   .mt#{$i} {
     margin-top: #{$i}px !important;
   }
@@ -369,6 +383,9 @@ pre {
   }
   .ml#{$i} {
     margin-left: #{$i}px !important;
+  }
+  .p#{$i} {
+    padding: #{$i}px !important;
   }
   .pt#{$i} {
     padding-top: #{$i}px !important;
@@ -382,4 +399,68 @@ pre {
   .pl#{$i} {
     padding-left: #{$i}px !important;
   }
+}
+
+// 超过元素展示。。。
+.text-singe-line {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
+  white-space: nowrap;
+}
+
+.display-none {
+  display: none;
+}
+
+.rounded-full {
+  border-radius: 50%;
+}
+
+
+
+.outline-box {
+  border-radius: calc(.5rem - 2px);
+  cursor: pointer;
+  padding: .25rem;
+  position: relative;
+  outline: 1px solid hsl(240 5.9% 90%) !important;
+}
+
+.outline-box.outline-box-active {
+  outline-color: #006be6;
+  outline: 2px solid var(--el-color-primary) !important;
+  outline-style: solid;
+  outline-width: 2px;
+}
+
+
+.outline-box:not(.outline-box-active):hover:after {
+  height: 100%;
+  left: 0;
+  opacity: 1;
+  outline: 2px solid var(--el-color-primary) !important;
+  top: 0;
+  width: 100%;
+}
+
+
+.outline-box:after {
+  border-radius: calc(.5rem - 2px);
+  //border-radius: calc(var(--radius) - 4px);
+  height: 0;
+  left: 50%;
+  opacity: 0;
+  outline: 2px solid transparent !important;
+  position: absolute;
+  top: 50%;
+  transition-duration: .3s;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+  width: 1px;
+  z-index: 20;
+  --tw-content: "";
+  animation-duration: .3s;
+  content: "";
+  content: var(--tw-content);
 }

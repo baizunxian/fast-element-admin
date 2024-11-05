@@ -2,6 +2,18 @@
 
 .splitpanes.default-theme .splitpanes__pane {
   background-color: #ffffff !important;
+  background-color: var(--el-color-white) !important;
+}
+
+.splitpanes.default-theme .splitpanes__splitter {
+  background-color: #ffffff !important;
+  background-color: var(--el-color-white) !important;
+  border-left: 1px solid var(--el-border-color)!important;
+}
+
+.default-theme.splitpanes--horizontal>.splitpanes__splitter, .default-theme .splitpanes--horizontal>.splitpanes__splitter {
+  border-top: 1px solid #eee;
+  border-top: 1px solid var(--el-border-color);
 }
 
 .splitpanes__pane .content {

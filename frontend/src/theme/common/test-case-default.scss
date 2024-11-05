@@ -1,0 +1,75 @@
+.method-color-get {
+  color: #61affe
+}
+
+.method-color-post {
+  color: #49cc90
+}
+
+.method-color-delete {
+  color: #f93e3d
+}
+
+.method-color-put {
+  color: #fca130
+}
+
+.method-color-na {
+  color: #f56c6c
+}
+
+
+@mixin priority-icon {
+  flex-grow: 0;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 50%;
+}
+
+.priority-0 {
+  @include priority-icon;
+  background: #fde9e7;
+  border: 2px solid #f8a59f;
+}
+
+.priority-1 {
+  @include priority-icon;
+  background: #fdede4;
+  border: 2px solid #f7b794;
+}
+
+.priority-2 {
+  @include priority-icon;
+  background: #e6f2fe;
+  border: 2px solid #9bcafd;
+}
+
+.priority-3 {
+  @include priority-icon;
+  background: #f9fafb;
+  border: 2px solid #d0d5dd;
+}
+
+.priority-4 {
+  @include priority-icon;
+  background: #fde9e7;
+  border: 2px solid #f8a59f;
+}
+
+.priority-5 {
+  @include priority-icon;
+  background: #fde9e7;
+  border: 2px solid #f8a59f;
+}
+
+.case-status-dot {
+  position: relative;
+  top: -1px;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+}

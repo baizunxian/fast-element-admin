@@ -1,17 +1,25 @@
-import {createApp} from 'vue';
-import pinia from '/@/stores/index';
+import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import {directive} from '/@/directive/index';
+import { directive } from '/@/directive/index';
 import other from '/@/utils/other';
 
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '/@/theme/index.scss';
+import { initStores } from "/@/stores";
 
-const app = createApp(App);
+async function initApplication() {
+	const app = createApp(App);
 
-directive(app);
-other.apiPublicAssembly(app)
+	const namespace = `${import.meta.env.VITE_APP_NAMESPACE}`;
+	await initStores(app, { namespace })
 
-app.use(pinia).use(router).use(ElementPlus).mount('#app');
+	directive(app);
+	other.apiPublicAssembly(app)
+	app.use(router)
+	app.use(ElementPlus)
+	app.mount('#app');
+}
+
+initApplication()

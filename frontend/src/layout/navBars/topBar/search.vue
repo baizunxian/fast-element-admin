@@ -30,9 +30,9 @@
 </template>
 
 <script setup lang="ts" name="layoutBreadcrumbSearch">
-import {reactive, ref, nextTick} from 'vue';
+import {nextTick, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {storeToRefs} from 'pinia';
+import {storeToRefs} from "/@/stores";
 import {useTagsViewRoutes} from '/@/stores/tagsViewRoutes';
 
 // 定义变量内容
@@ -68,18 +68,18 @@ const menuSearch = (queryString: string, cb: Function) => {
 };
 // 菜单搜索过滤
 const createFilter = (queryString: string) => {
-  return (restaurant: RouteItem) => {
+  return (restaurant) => {
     return (
         restaurant.path.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
-        restaurant.meta!.title!.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
-        restaurant.meta!.title!.indexOf(queryString.toLowerCase()) > -1
+        restaurant.meta?.title?.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
+        restaurant.meta?.title?.indexOf(queryString.toLowerCase()) > -1
     );
   };
 };
 // 初始化菜单数据
 const initTageView = () => {
   if (state.tagsViewList.length > 0) return false;
-  tagsViewRoutes.value.map((v: RouteItem) => {
+  tagsViewRoutes.value.map((v) => {
     if (!v.meta?.isHide) state.tagsViewList.push({...v});
   });
 };
@@ -103,6 +103,8 @@ defineExpose({
   position: relative;
 
   :deep(.el-dialog) {
+    background: unset;
+    box-shadow: unset;
     .el-dialog__header,
     .el-dialog__body {
       display: none;

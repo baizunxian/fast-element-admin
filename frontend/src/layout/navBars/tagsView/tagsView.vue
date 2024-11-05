@@ -43,31 +43,33 @@
         </li>
       </ul>
     </el-scrollbar>
-    <Contextmenu :dropdown="state.dropdown" ref="contextmenuRef" @currentContextmenuClick="onCurrentContextmenuClick"/>
+    <Contextmenu :dropdown="state.dropdown"
+                 ref="contextmenuRef"
+                 @currentContextmenuClick="onCurrentContextmenuClick"/>
   </div>
 </template>
 
 <script setup lang="ts" name="layoutTagsView">
 import {
-  defineAsyncComponent,
-  reactive,
-  onMounted,
   computed,
-  ref,
+  defineAsyncComponent,
   nextTick,
-  onBeforeUpdate,
   onBeforeMount,
+  onBeforeUpdate,
+  onMounted,
   onUnmounted,
+  reactive,
+  ref,
   watch
 } from 'vue';
-import {useRoute, useRouter, onBeforeRouteUpdate} from 'vue-router';
+import {onBeforeRouteUpdate, useRoute, useRouter} from 'vue-router';
 import Sortable from 'sortablejs';
 import {ElMessage} from 'element-plus';
-import {storeToRefs} from 'pinia';
-import pinia from '/@/stores/index';
+import {storeToRefs} from "/@/stores";
 import {useTagsViewRoutes} from '/@/stores/tagsViewRoutes';
 import {useThemeConfig} from '/@/stores/themeConfig';
 import {useKeepALiveNames} from '/@/stores/keepAliveNames';
+import {useRoutesList} from '/@/stores/routesList';
 import {Session} from '/@/utils/storage';
 import {isObjectValueEqual} from '/@/utils/arrayOperation';
 import other from '/@/utils/other';
@@ -84,8 +86,10 @@ const tagsUlRef = ref();
 const stores = useTagsViewRoutes();
 const storesThemeConfig = useThemeConfig();
 const storesTagsViewRoutes = useTagsViewRoutes();
+const storesRoutesList = useRoutesList();
 const {themeConfig} = storeToRefs(storesThemeConfig);
 const {tagsViewRoutes} = storeToRefs(storesTagsViewRoutes);
+const {routesList} = storeToRefs(storesRoutesList);
 const storesKeepALiveNames = useKeepALiveNames();
 const route = useRoute();
 const router = useRouter();
@@ -123,6 +127,7 @@ const isActive = (v: RouteItem) => {
       return v.url ? v.url === state.routeActive : v.path === state.routeActive;
     } else {
       // 通过 name 传参，params 取值，刷新页面参数消失
+      // https://gitee.com/lyt-top/vue-next-admin/issues/I51RS9
       return v.path === state.routePath;
     }
   }
@@ -137,18 +142,18 @@ const getTagsViewRoutes = async () => {
   state.routePath = (await route.meta.isDynamic) ? route.meta.isDynamicPath : route.path;
   state.tagsViewList = [];
   state.tagsViewRoutesList = tagsViewRoutes.value;
-  initTagsView();
+  await initTagsView();
 };
 // pinia 中获取路由信息：如果是设置了固定的（isAffix），进行初始化显示
 const initTagsView = async () => {
   if (Session.get('tagsViewList') && getThemeConfig.value.isCacheTagsView) {
     state.tagsViewList = await Session.get('tagsViewList');
   } else {
-    await state.tagsViewRoutesList.map((v: RouteItem) => {
+    state.tagsViewRoutesList.map((v: RouteItem) => {
       if (v.meta?.isAffix && !v.meta.isHide) {
         v.url = setTagsViewHighlight(v);
         state.tagsViewList.push({...v});
-        storesKeepALiveNames.addCachedView(v);
+        storesKeepALiveNames.addCachedView(v.meta.isKeepAlive || false, v.path);
       }
     });
     await addTagsView(route.path, <RouteToFrom>route);
@@ -175,10 +180,12 @@ const solveAddTagsView = async (path: string, to?: RouteToFrom) => {
     if (findItem.meta.isLink && !findItem.meta.isIframe) return false;
     to?.meta?.isDynamic ? (findItem.params = to.params) : (findItem.query = to?.query);
     findItem.url = setTagsViewHighlight(findItem);
+    findItem.fullPath = to?.fullPath
     state.tagsViewList.push({...findItem});
-    await storesKeepALiveNames.addCachedView(findItem);
     addBrowserSetSession(state.tagsViewList);
   }
+
+  await storesKeepALiveNames.addCachedView(to?.meta?.isKeepAlive || false, to?.fullPath || "");
 };
 // 处理单标签时，第二次的值未覆盖第一次的 tagsViewList 值（Session Storage）
 const singleAddTagsView = (path: string, to?: RouteToFrom) => {
@@ -193,6 +200,7 @@ const singleAddTagsView = (path: string, to?: RouteToFrom) => {
     ) {
       to?.meta?.isDynamic ? (v.params = to.params) : (v.query = to?.query);
       v.url = setTagsViewHighlight(v);
+      v.fullPath = to?.fullPath
       addBrowserSetSession(state.tagsViewList);
     }
   });
@@ -201,6 +209,7 @@ const singleAddTagsView = (path: string, to?: RouteToFrom) => {
 const addTagsView = (path: string, to?: RouteToFrom) => {
   // 防止拿取不到路由信息
   nextTick(async () => {
+    // 修复：https://gitee.com/lyt-top/vue-next-admin/issues/I3YX6G
     let item: RouteItem;
     if (to?.meta?.isDynamic) {
       // 动态路由（xxx/:id/:name"）：参数不同，开启多个 tagsview
@@ -224,12 +233,14 @@ const addTagsView = (path: string, to?: RouteToFrom) => {
       item = state.tagsViewRoutesList.find((v: RouteItem) => v.path === path);
     }
     if (!item) return false;
+    // 设置全路径，用于同个路由不同参数时缓存问题
+    item.fullPath = to?.fullPath
     if (item?.meta?.isLink && !item.meta.isIframe) return false;
     if (to?.meta?.isDynamic) item.params = to?.params ? to?.params : route.params;
     else item.query = to?.query ? to?.query : route.query;
     item.url = setTagsViewHighlight(item);
-    await storesKeepALiveNames.addCachedView(item);
-    await state.tagsViewList.push({...item});
+    await storesKeepALiveNames.addCachedView(route.meta.isKeepAlive || false, route.fullPath);
+    state.tagsViewList.push({...item});
     await addBrowserSetSession(state.tagsViewList);
   });
 };
@@ -246,16 +257,16 @@ const refreshCurrentTagsView = async (fullPath: string) => {
     }
   });
   if (!item) return false;
-  await storesKeepALiveNames.delCachedView(item);
+  await storesKeepALiveNames.delCachedView(fullPath);
   mittBus.emit('onTagsViewRefreshRouterView', fullPath);
-  if (item.meta?.isKeepAlive) storesKeepALiveNames.addCachedView(item);
+  await storesKeepALiveNames.addCachedView(item.meta?.isKeepAlive || false, fullPath);
 };
 // 3、关闭当前 tagsView：如果是设置了固定的（isAffix），不可以关闭
 const closeCurrentTagsView = (path: string) => {
   state.tagsViewList.map((v: RouteItem, k: number, arr: RouteItems) => {
     if (!v.meta?.isAffix) {
       if (getThemeConfig.value.isShareTagsView ? v.path === path : v.url === path) {
-        storesKeepALiveNames.delCachedView(v);
+        storesKeepALiveNames.delCachedView(v.fullPath || "");
         state.tagsViewList.splice(k, 1);
         setTimeout(() => {
           if (state.tagsViewList.length === k && getThemeConfig.value.isShareTagsView ? state.routePath === path : state.routeActive === path) {
@@ -326,6 +337,7 @@ const openCurrenFullscreen = async (path: string) => {
 };
 // 当前项右键菜单点击，拿 `当前点击的路由路径` 对比 `tagsView 路由数组`，取当前点击项的详细路由信息
 // 防止 tagsView 非当前页演示时，操作异常
+// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const getCurrentRouteItem = (item: RouteItem): any => {
   let resItem: RouteToFrom = {};
   state.tagsViewList.forEach((v: RouteItem) => {
@@ -352,9 +364,12 @@ const onCurrentContextmenuClick = async (item: RouteItem) => {
   switch (item.contextMenuClickId) {
     case 0:
       // 刷新当前
-      if (meta.isDynamic) await router.push({name, params});
-      else await router.push({path, query});
-      refreshCurrentTagsView(route.fullPath);
+      if (meta.isDynamic) {
+        await router.push({name, params})
+      } else {
+        await router.push({path, query})
+      }
+      await refreshCurrentTagsView(route.fullPath);
       break;
     case 1:
       // 关闭当前
@@ -372,7 +387,7 @@ const onCurrentContextmenuClick = async (item: RouteItem) => {
       break;
     case 4:
       // 开启当前页面全屏
-      openCurrenFullscreen(getThemeConfig.value.isShareTagsView ? path : url);
+      await openCurrenFullscreen(getThemeConfig.value.isShareTagsView ? path : url);
       break;
   }
 };
@@ -381,7 +396,7 @@ const onContextmenu = (v: RouteItem, e: MouseEvent) => {
   const {clientX, clientY} = e;
   state.dropdown.x = clientX;
   state.dropdown.y = clientY;
-  contextmenuRef.value.openContextmenu(v);
+  contextmenuRef.value.openContextmenu(v, isActive(v));
 };
 // 鼠标按下时，判断是鼠标中键就关闭当前 tasgview
 const onMousedownMenu = (v: RouteItem, e: MouseEvent) => {
@@ -391,11 +406,20 @@ const onMousedownMenu = (v: RouteItem, e: MouseEvent) => {
   }
 };
 // 当前的 tagsView 项点击时
-const onTagsClick = (v: RouteItem, k: number) => {
+const onTagsClick = async (v: RouteItem, k: number) => {
   state.tagsRefsIndex = k;
-  router.push(v);
+  await router.push(v);
+  await storesKeepALiveNames.addCachedView(v.meta?.isKeepAlive || false, route.fullPath);
+  v.fullPath = route.fullPath
+  // 分栏布局时，收起/展开菜单
+  if (getThemeConfig.value.layout === 'columns') {
+    const item: RouteItem = routesList.value.find((r: RouteItem) => r.path.indexOf(`/${v.path.split('/')[1]}`) > -1);
+    !item.children ? (getThemeConfig.value.isCollapse = true) : (getThemeConfig.value.isCollapse = false);
+  }
 };
 // 处理 url，地址栏链接有参数时，tagsview 右键菜单刷新功能失效问题，感谢 @ZzZz-RIPPER、@dejavuuuuu
+// https://gitee.com/lyt-top/vue-next-admin/issues/I5K3YO
+// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const transUrlParams = (v: RouteItem) => {
   let params = v.query && Object.keys(v.query).length > 0 ? v.query : v.params;
   if (!params) return '';
@@ -433,7 +457,7 @@ const setTagsViewHighlight = (v: RouteToFrom) => {
 };
 // 鼠标滚轮滚动
 const onHandleScroll = (e: WheelEventType) => {
-  scrollbarRef.value.$refs.wrapRef.scrollLeft += e.wheelDelta / 4;
+  scrollbarRef.value.$refs.wrapRef.scrollLeft -= e.wheelDelta / 4;
 };
 // tagsView 横向滚动
 const tagsViewmoveToCurrentTag = () => {
@@ -491,7 +515,7 @@ const tagsViewmoveToCurrentTag = () => {
 const getTagsRefsIndex = (path: string | unknown) => {
   nextTick(async () => {
     // await 使用该写法，防止拿取不到 tagsViewList 列表数据不完整
-    let tagsViewList = await state.tagsViewList;
+    let tagsViewList = state.tagsViewList;
     state.tagsRefsIndex = tagsViewList.findIndex((v: RouteItem) => {
       if (getThemeConfig.value.isShareTagsView) {
         return v.path === path;
@@ -523,6 +547,7 @@ const initSortable = async () => {
     },
   });
 };
+// 拖动问题，https://gitee.com/lyt-top/vue-next-admin/issues/I3ZRRI
 const onSortableResize = async () => {
   await initSortable();
   if (other.isMobile()) state.sortable.el && state.sortable.destroy();
@@ -531,6 +556,7 @@ const onSortableResize = async () => {
 onBeforeMount(() => {
   // 初始化，防止手机端直接访问时还可以拖拽
   onSortableResize();
+  // 拖动问题，https://gitee.com/lyt-top/vue-next-admin/issues/I3ZRRI
   window.addEventListener('resize', onSortableResize);
   // 监听非本页面调用 0 刷新当前，1 关闭当前，2 关闭其它，3 关闭全部 4 当前页全屏
   mittBus.on('onCurrentContextmenuClick', (data: RouteItem) => {
@@ -581,7 +607,7 @@ onMounted(() => {
   initSortable();
 });
 // 路由更新时（组件内生命钩子）
-onBeforeRouteUpdate(async (to) => {
+onBeforeRouteUpdate(async (to: any) => {
   state.routeActive = setTagsViewHighlight(to);
   state.routePath = to.meta.isDynamic ? to.meta.isDynamicPath : to.path;
   await addTagsView(to.path, <RouteToFrom>to);
@@ -589,9 +615,9 @@ onBeforeRouteUpdate(async (to) => {
 });
 // 监听路由的变化，动态赋值给 tagsView
 watch(
-    pinia.state,
+    () => tagsViewRoutes.value,
     (val) => {
-      if (val.tagsViewRoutes.tagsViewRoutes.length === state.tagsViewRoutesList.length) return false;
+      if (val.length === state.tagsViewRoutesList.length) return false;
       getTagsViewRoutes();
     },
     {

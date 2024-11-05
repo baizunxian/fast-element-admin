@@ -1,10 +1,10 @@
 <template>
-	<div class="layout-footer pb15">
+	<el-footer class="layout-footer pb15">
 		<div class="layout-footer-warp">
-			<div>fast-element-admin，Made by bzx with ❤️</div>
+			<div>zerorunner，Made by bzx with ❤️</div>
 			<div class="mt5">深圳市 xxx 公司版权所有</div>
 		</div>
-	</div>
+	</el-footer>
 </template>
 
 <script setup lang="ts" name="layoutFooter">

@@ -141,6 +141,10 @@
 // 	background: var(--next-bg-menuBar-light-1);
 // }
 // 水平菜单、横向菜单折叠 a 标签
+.el-popover.el-popper {
+  //border-radius: 15px;
+}
+
 .el-popper.is-dark a {
   color: var(--el-color-white) !important;
   text-decoration: none;
@@ -233,6 +237,7 @@
 /* Dropdown 下拉菜单
 ------------------------------- */
 .el-dropdown-menu {
+  z-index: 1000;
   list-style: none !important; /*修复 Dropdown 下拉菜单样式问题 2022.03.04*/
 }
 
@@ -275,7 +280,7 @@
       //position: absolute;
 
       .el-dialog__body {
-        //padding: 10px !important;
+        padding: 10px !important;
       }
     }
   }
@@ -289,13 +294,13 @@
 
 /* Card 卡片
 ------------------------------- */
-.el-card {
-  border-radius: 15px;
-}
-
-.el-card__header {
-  padding: 15px 20px;
-}
+//.app-container .el-card {
+//  border-radius: 15px;
+//}
+//
+//.app-container.el-card__header {
+//  padding: 15px 20px;
+//}
 
 /* Table 表格 element plus 2.2.0 版本
 ------------------------------- */

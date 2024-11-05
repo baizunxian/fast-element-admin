@@ -37,7 +37,7 @@
 
 <script setup lang="ts" name="layoutUpgrade">
 import {reactive, computed, onMounted} from 'vue';
-import {storeToRefs} from 'pinia';
+import {storeToRefs} from "/@/stores";
 import {useThemeConfig} from '/@/stores/themeConfig';
 import {Local} from '/@/utils/storage';
 

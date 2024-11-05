@@ -1,16 +1,20 @@
 <template>
   <div class="layout-logo" v-if="setShowLogo" @click="onThemeConfigChange">
-    <span>{{ themeConfig.globalTitle }}</span>
+    <img :src="getLogo" class="layout-logo-medium-img"/>
+    <!--    <span>{{ themeConfig.globalTitle }}</span>-->
   </div>
   <div class="layout-logo-size" v-else @click="onThemeConfigChange">
-    <span>{{ themeConfig.globalTitle.substring(0, 4) }}</span>
+    <img :src="getLogo" class="layout-logo-size-img"/>
   </div>
 </template>
 
 <script setup lang="ts" name="layoutLogo">
 import {computed} from 'vue';
-import {storeToRefs} from 'pinia';
+import {storeToRefs} from "/@/stores";
 import {useThemeConfig} from '/@/stores/themeConfig';
+import defaultLogo from '/@/assets/whiteLogo.svg';
+import transverseLogo from '/@/assets/logo.svg';
+import logoMini from '/@/assets/logo-mini.png';
 
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();
@@ -20,6 +24,21 @@ const {themeConfig} = storeToRefs(storesThemeConfig);
 const setShowLogo = computed(() => {
   let {isCollapse, layout} = themeConfig.value;
   return !isCollapse || layout === 'classic' || document.body.clientWidth < 1000;
+});
+// 获取logo
+const getLogo = computed(() => {
+  let {isCollapse, layout} = themeConfig.value;
+  if (isCollapse) {
+    if (document.body.clientWidth < 1000) {
+      return defaultLogo
+    }
+    return logoMini
+  } else {
+    if (layout === "defaults") return defaultLogo
+    if (layout === "transverse") return transverseLogo
+    if (layout === "columns") return defaultLogo
+    if (layout === "classic") return transverseLogo
+  }
 });
 
 // logo 点击实现菜单展开/收起

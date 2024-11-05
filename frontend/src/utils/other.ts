@@ -2,7 +2,6 @@ import type {App} from 'vue';
 import {nextTick} from 'vue';
 import * as svg from '@element-plus/icons-vue';
 import router from '/@/router/index';
-import pinia from '/@/stores/index';
 import {storeToRefs} from 'pinia';
 import {useThemeConfig} from '/@/stores/themeConfig';
 import {Local} from '/@/utils/storage';
@@ -13,6 +12,7 @@ import {Pane, Splitpanes} from "splitpanes";
 import ZTable from "/@/components/Z-Table/index.vue"
 import MonacoEditor from "/@/components/monaco/index.vue"
 import SvgIcon from "/@/components/svgIcon/index.vue"
+import ZeroCard from "/@/components/ZeroCard/index.vue"
 
 
 /**
@@ -59,7 +59,7 @@ export function elSvg(app: App) {
  * @method const title = useTitle(); ==> title()
  */
 export function useTitle() {
-  const stores = useThemeConfig(pinia);
+  const stores = useThemeConfig();
   const {themeConfig} = storeToRefs(stores);
   nextTick(() => {
     let webTitle = '';
@@ -121,7 +121,7 @@ export const lazyImg = (el: string, arr: EmptyArrayType) => {
  * @returns 返回 `window.localStorage` 中读取的缓存值 `globalComponentSize`
  */
 export const globalComponentSize = (): string => {
-  const stores = useThemeConfig(pinia);
+  const stores = useThemeConfig();
   const {themeConfig} = storeToRefs(stores);
   return Local.get('themeConfig')?.globalComponentSize || themeConfig.value?.globalComponentSize;
 };
@@ -212,6 +212,7 @@ const other = {
     splitpanes(app);
     monaco(app);
     elSvg(app);
+    app.component('z-card', ZeroCard);
   },
   useTitle: () => {
     useTitle();

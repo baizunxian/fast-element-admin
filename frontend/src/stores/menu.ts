@@ -7,31 +7,36 @@ import {useUserApi} from "/@/api/useSystemApi/user";
  * @methods 设置菜单信息
  */
 export const useMenuInfo = defineStore('useMenuInfo', {
-  state: (): MenuDataState => ({
-    menuData: [],
-  }),
-  actions: {
+	state: (): MenuDataState => ({
+		menuData: [],
+	}),
+	actions: {
 
-    async setUserInfos() {
-      if (Session.get('menuData')) {
-        this.menuData = Session.get('menuData');
-      } else {
-        this.menuData = await this.getMenuData();
-      }
-    },
+		async setUserInfos() {
+			if (Session.get('menuData')) {
+				this.menuData = Session.get('menuData');
+			} else {
+				this.menuData = await this.getMenuData();
+			}
+		},
 
-    async getMenuData() {
-      let data: any
-      if (Session.get('menuData')) {
-        data = Session.get('menuData');
-      } else {
-        let res = await useUserApi().getMenuByToken()
-        this.menuData = data = res.data
+		async getMenuData() {
+			let data
+			if (Session.get('menuData')) {
+				data = Session.get('menuData');
+			} else {
+				let res = await useUserApi().getMenuByToken()
+				this.menuData = data = res.data
 
-        Session.set("menuData", this.menuData)
-      }
-      return data
+				Session.set("menuData", this.menuData)
+			}
+			return data
+		},
 
-    }
-  },
+		getMenuList() {
+			if (Session.get('menuData')) {
+				return Session.get('menuData');
+			}
+		}
+	},
 });
