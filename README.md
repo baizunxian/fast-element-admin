@@ -4,7 +4,7 @@
 - 基于 python + fastApi + celery + sqlalchemy + redis
 
 - 使用软件版本
-- python version 3.9.6
+- python version <= 3.13
 - mysql version 8.0.23
 - redis version 6.0.9
 - node version 18.15.0
