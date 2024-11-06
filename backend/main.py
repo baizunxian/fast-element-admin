@@ -28,7 +28,7 @@ async def start_app(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app: FastAPI = FastAPI(title="fast_element_admin",
+    app: FastAPI = FastAPI(title="vue-fastapi-admin",
                            config=config,
                            description=config.SERVER_DESC,
                            version=config.SERVER_VERSION,
